@@ -1,12 +1,10 @@
 let restaurants,
   neighborhoods,
   cuisines;
-//var dbhelper = require('./dbhelper');
-//var DBHelper = new dbhelper;
-//import * as dbhelper1 from './dbhelper.js';
-//import * as DBHelper from './dbhelper.js';
 var map;
 var markers = [];
+
+//var DBHelper = import(dbhelper);
 
 /**
  * Register service worker
@@ -20,7 +18,7 @@ if (navigator.serviceWorker) {
   });
 };
 
-//DBHelper = () => {};
+//class DBHelper = () => {};
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
@@ -164,6 +162,28 @@ const createRestaurantHTML = (restaurant) => {
   const name = document.createElement('h1');
   name.innerHTML = restaurant.name;
   li.append(name);
+
+//is_favorite
+  const fav = document.createElement('button');
+  fav.className = 'favButton';
+  fav.innerHTML = '☆';
+  li.append(fav);
+  fav.setAttribute('aria-label', 'add restaurant as favorite');
+  fav.onclick = function(){
+    let isFav = restaurant.is_favorite;
+    if(isFav == false) {
+      isFav = true;
+      fav.innerHTML = '★';
+      fav.classList.toggle("isFavTrue");
+    }
+    else {
+      isFav = false;
+      fav.innerHTML = '☆';
+//      fav.classList.toggle("isFavFalse");
+      }
+      //const favToggle = restaurant.is_favorite = true;
+      DBHelper.toggleFavorite(restaurant.id, isFav);
+    }
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;

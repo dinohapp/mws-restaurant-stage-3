@@ -180,6 +180,22 @@ nav h1 a {
 }
 
 /* ====================== Restaurant Listing ====================== */
+
+.favButton {
+   background-color: white;
+   font-size: 50px;
+    color: red;
+}
+
+.isFavTrue {
+  font-size: 50px;
+  color: red;
+}
+
+#addReview {
+  display: none;
+}
+
 #restaurants-list {
   background-color: #f3f3f3;
   list-style: outside none none;

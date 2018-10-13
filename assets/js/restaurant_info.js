@@ -1,5 +1,14 @@
 let restaurant;
+let reviews;
 var map;
+
+if (navigator.serviceWorker) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('../sw.js').catch(function(error) {
+    console.log('SW registration failed with error: ' + error);
+    })
+  });
+};
 
 /**
  * Initialize Google map, called from HTML.
@@ -45,12 +54,58 @@ const fetchRestaurantFromURL = (callback) => {
   }
 }
 
+
+/**
+ * Get current reviews from page URL.
+ */
+const fetchReviewsFromURL = (callback) => {
+  if (self.reviews) { // restaurant already fetched!
+    callback(null, self.reviews)
+    return;
+  }
+  const id = getParameterByName('restaurant_id');
+  if (!restaurant_id) { // no id found in URL
+    error = 'No review in URL'
+    callback(error, null);
+  } else {
+    DBHelper.fetchReviewsById(id, (error, reveiws) => {
+      self.reviews = reviews;
+      if (!reviews) {
+        console.error(error);
+        return;
+      }
+      fillReviewsHTML();
+      callback(null, reviews)
+    });
+  }
+}
+
 /**
  * Create restaurant HTML and add it to the webpage
  */
 const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+
+    const fav = document.createElement('button');
+  fav.className = 'favButton';
+  fav.innerHTML = '☆';//&#2605-06
+  name.append(fav);
+  fav.setAttribute('aria-label', 'add restaurant as favorite');
+  fav.onclick = function(){
+    if(restaurant.is_favorite == false) {
+      restaurant.is_favorite = true;
+      fav.innerHTML = '★';
+      fav.classList.toggle("isFavTrue");
+    }
+    else {
+      restaurant.is_favorite = false;
+      fav.innerHTML = '☆';
+//      fav.classList.toggle("isFavFalse");
+      }
+            //const favToggle = restaurant.is_favorite = true;
+      //DBHelper.toggleFavorite(restaurant.id, favToggle);
+    }
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -107,6 +162,7 @@ const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     container.appendChild(noReviews);
     return;
   }
+
   const ul = document.getElementById('reviews-list');
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
@@ -163,4 +219,18 @@ const getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+const addReviewToggle = () => {
+  const reviewToggle = document.getElementById('addReview');
+  if(reviewToggle.style.display == 'none') {
+    reviewToggle.style.display = 'block';
+  } else {
+    reviewToggle.style.display = 'none';
+  }
+}
+
+const addReview = (event) => {
+  event.preventDefault();
+  console.log('ADD REVIEW LOGIC');
 }

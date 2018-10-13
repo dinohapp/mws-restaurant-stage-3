@@ -1,6 +1,7 @@
 var gulp = require('gulp'),
 	webpack = require('webpack-stream'),
 	vinyl_source = require('vinyl-source-stream'),
+	vinyl_buffer = require('vinyl-buffer'),
 	del = require('del'),
 	autoprefixer = require('gulp-autoprefixer'),
 	babelify = require('babelify'),
@@ -9,9 +10,10 @@ var gulp = require('gulp'),
 	uglify = require('gulp-uglify'),
 	streamify = require('gulp-streamify'),
 	csso = require('gulp-csso'),
-	htmlmin = require('gulp-htmlmin');
+	htmlmin = require('gulp-htmlmin'),
+	browserify = require('browserify');
 
-gulp.task('default', ['clean', 'css', 'html', 'js', 'images', 'sw', 'manifest', 'favicon']), function() {
+gulp.task('default', ['clean', 'css', 'html', 'js', 'db', 'images', 'sw', 'manifest', 'favicon']), function() {
 
 
 };
@@ -51,12 +53,25 @@ gulp.task('css', function() {
 gulp.task('sw', function() {
 		gulp.src([`./assets/sw.js`])
 		.pipe(webpack({
-			mode: 'production',
+			mode: 'development',
 			output: {filename: 'sw.js'}
 		}))
 		.pipe(gulp.dest('./test'));
 });
 
+/*gulp.task('sw', function() {
+		gulp.src('./assets/sw.js')
+		.pipe(babel({
+  			"presets": [
+    			["env"
+    			//, {"modules": false}
+    			]
+  				]
+			}))
+		//.pipe(streamify(uglify()))
+		.pipe(gulp.dest('./test/'));
+});
+*/
 gulp.task('images', function() {
 	gulp.src('./assets/img/**/*.*')
 		.pipe(gulp.dest('./test/img'));
@@ -83,16 +98,46 @@ gulp.task('images', function() {
 	jss(files[2]);
 });
 */
-
 gulp.task('js', function() {
 		gulp.src('./assets/js/*.js')
 		.pipe(babel({
   			"presets": [
-    			["env", {
-      				"modules": false
-    				}]
+    			["env"
+    			//, {"modules": false}
+    			]
   				]
 			}))
-		.pipe(streamify(uglify()))
+		//.pipe(streamify(uglify()))
 		.pipe(gulp.dest('./test/js/'));
+});
+
+
+/*gulp.task('js', function() {
+	var files = [
+		'dbhelper.js',
+		'main.js',
+		'restaurant_info.js'
+			];
+//	function jss(file) {
+		var b = browserify({});
+		return b.bundle()
+		.pipe(vinyl_source(`./assets/js/${files[1]}`))
+		.pipe(vinyl_buffer())
+		.transform(babelify, {presets: ['env']})
+		//.pipe(streamify(uglify()))
+		.pipe(gulp.dest('./test/js'));
+
+	// };
+	// jss(files[0]);
+	// jss(files[1]);
+	// jss(files[2]);
+});*/
+
+gulp.task('db', function() {
+		gulp.src([`./assets/js/dbhelper.js`])
+		.pipe(webpack({
+			mode: 'development',
+			output: {filename: 'dbhelper.js'}
+		}))
+		.pipe(gulp.dest('./test/js'));
 });

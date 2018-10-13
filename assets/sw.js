@@ -1,4 +1,4 @@
-import {set, get} from 'idb-keyval';
+import {Store, set, get} from 'idb-keyval';
 
 self.addEventListener('install', function(event) {
 	let cachedURLs = [
@@ -34,6 +34,25 @@ self.addEventListener('install', function(event) {
 });
 
 
+self.addEventListener('fetch', event => {
+	event.respondWith(
+    caches.match(event.request).then(function(response) {
+      if (response) return response;
+      return fetch(event.request)
+      .then(resp => {
+      	if(!resp || resp.status !== 200 || resp.type !== 'basic') {
+      		return resp;
+      	}
+      	return caches.open('v1').then(cache => {
+      		cache.put(event.request, resp.clone())
+      		return resp;
+      		})
+      	})
+      })
+    );
+   });
+
+
 // if request NOT equals /restaurants/ look in sw caches and return, if not in caches then fetch, else serve from IDB
 
 /*
@@ -45,16 +64,19 @@ So in Project 2 you'll ultimately be checking to see if your restaurant data is 
 4 if 2 and 3 false, put it in caches and idb then return
 */
 
-self.addEventListener('fetch', event => {
+/*self.addEventListener('fetch', event => {
 	const rURL = new URL(event.request.url);
-	// if (event.request.url.indexOf('https://maps.googleapis.com/maps') == 0) {
-	// 	event.respondWith(
-	// 		mapsHandler(event.request));
-	// }
-	if(rURL.port === '1337') {
-		event.respondWith(
-			idbHandler(event.request));
-	}
+	const revURL = new URL('http://localhost:1337/reviews')
+	 if (event.request.url.includes('restaurants') == true) {
+ 		event.respondWith(
+ 			idbRestaurantHandler(event.request),
+ 			idbReviewsHandler(revURL));
+	 }
+	 //else if (event.request.url.indexOf('reviews') !== -1)
+	 else if (event.request.url.includes('reviews') == true) {
+ 		event.respondWith(
+ 			idbReviewsHandler(revURL));
+ 	}
 	else {
 		event.waitUntil(
 				cachesHandler(event));
@@ -62,26 +84,41 @@ self.addEventListener('fetch', event => {
 
 });
 
-// const mapsHandler = event => {
-// 	return fetch(event.request);
-// };
-
-const idbHandler = request => {
-	return get('restaurants')
+const idbRestaurantHandler = request => {
+	const restaurantsDB = new Store('restaurantsDB', 'restaurants');
+	return get('restaurants', restaurantsDB)
 		.then(restaurants => {
 			if (restaurants) return restaurants;
 			return fetch(request)
 			.then(response => response.json())
 			.then(setRest => {
-				set('restaurants', setRest);
+				set('restaurants', setRest, restaurantsDB);
 				setRest.forEach(restaurant => {
-					set(restaurant.id, restaurant);
+					set(restaurant.id, restaurant, restaurantsDB);
 				});
 				return setRest;
 			})
 		})
 		.then(response => new Response(JSON.stringify(response)));
 };
+
+const idbReviewsHandler = request => {
+	const reviewsDB = new Store('restaurantsDB', 'restaurants');
+		return get('reviews', reviewsDB)
+		.then(reviews => {
+			if (reviews) return reviews;
+			return fetch(request)
+			.then(response => response.json())
+			.then(setRev => {
+				set('reviews', setRev, reviewsDB);
+				setRev.forEach(review => {
+					set(review.restaurant_id, review, reviewsDB);
+				});
+				return setRev;
+			})
+		})
+		.then(response => new Response(JSON.stringify(response)));
+	}
 
 const cachesHandler = event => {
 	event.respondWith(
@@ -99,7 +136,28 @@ const cachesHandler = event => {
       	})
       })
     );
-};
+};*/
+
+
+
+
+/*const idbRestaurantHandler = request => {
+	return get('restaurants')
+		.then(restaurants => {
+			if (restaurants) return restaurants;
+			return fetch(request)
+			.then(response => response.json())
+			.then(setRest => {
+				set('restaurants', setRest);
+				setRest.forEach(restaurant => {
+					set(restaurant.id, restaurant);
+				});
+				return setRest;
+			})
+		})
+		.then(response => new Response(JSON.stringify(response)));
+		console.log('test1')
+};*/
 
 /*
 //original

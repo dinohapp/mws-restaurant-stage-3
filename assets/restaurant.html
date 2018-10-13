@@ -53,6 +53,25 @@
     <!-- end restaurant -->
     <!-- Beginning reviews -->
     <section id="reviews-container">
+      <button onclick="addReviewToggle()">Add Review</button>
+      <div id="addReview">
+        <h2>Add Review</h2>
+        <form id="">
+          <label for="author">Name:</label>
+          <input id="author" name="author" type="text">
+          <label for="rating">Rating:</label>
+          <select id="rating" aria-label="Select restaurant rating 1-5" name="Rating">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          <label for="comment">Comment:</label>
+          <textarea id="comment" name="comment"></textarea>
+          <button class="submit" onclick="addReview()">Add Review</button>
+        </form>
+      </div>
       <ul id="reviews-list"></ul>
     </section>
     <!-- End reviews -->
@@ -68,7 +87,7 @@
   <!-- Beginning scripts -->
   <!-- Database helpers -->
   <!-- <script async type="application/javascript" charset="utf-8" src="js/main.js"></script> -->
-  <script async type="text/javascript" src="js/dbhelper.js"></script>
+  <script type="text/javascript" src="js/dbhelper.js"></script>
   <!-- Main javascript file -->
   <script async type="text/javascript" src="js/restaurant_info.js"></script>
   <!-- Google Maps -->
