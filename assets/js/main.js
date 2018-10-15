@@ -25,6 +25,8 @@ if (navigator.serviceWorker) {
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
+  DBHelper.fetchRestaurants();
+  DBHelper.fetchReviews();
 });
 
 /**
@@ -214,5 +216,3 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
     self.markers.push(marker);
   });
 }
-
-//};

@@ -27,6 +27,8 @@ if (navigator.serviceWorker) {
 document.addEventListener('DOMContentLoaded', function (event) {
   fetchNeighborhoods();
   fetchCuisines();
+  DBHelper.fetchRestaurants();
+  DBHelper.fetchReviews();
 });
 
 /**
@@ -228,5 +230,3 @@ var addMarkersToMap = function addMarkersToMap() {
     self.markers.push(marker);
   });
 };
-
-//};

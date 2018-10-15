@@ -1,6 +1,6 @@
 let restaurant;
 let reviews;
-var map;
+let map;
 
 if (navigator.serviceWorker) {
   window.addEventListener('load', function() {
@@ -58,7 +58,7 @@ const fetchRestaurantFromURL = (callback) => {
 /**
  * Get current reviews from page URL.
  */
-const fetchReviewsFromURL = (callback) => {
+/*const fetchReviewsFromURL = (callback) => {
   if (self.reviews) { // restaurant already fetched!
     callback(null, self.reviews)
     return;
@@ -78,7 +78,7 @@ const fetchReviewsFromURL = (callback) => {
       callback(null, reviews)
     });
   }
-}
+}*/
 
 /**
  * Create restaurant HTML and add it to the webpage
@@ -124,7 +124,11 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  DBHelper.fetchReviews(restaurant.id)
+  .then(reviews => {
+    self.reviews = reviews;
+    fillReviewsHTML()
+  })
 }
 
 /**
@@ -150,7 +154,8 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+const fillReviewsHTML = (reviews = self.reviews) => {
+  console.log(reviews);
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -173,14 +178,14 @@ const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 /**
  * Create review HTML and add it to the webpage.
  */
-const createReviewHTML = (review) => {
+const createReviewHTML = (review = self.reviews[revID]) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.innerHTML = review.name;
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = `${new Date(review.createdAt).toLocaleString()}`;
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -234,3 +239,6 @@ const addReview = (event) => {
   event.preventDefault();
   console.log('ADD REVIEW LOGIC');
 }
+
+let restID = getParameterByName('id');
+let revID = `restaurant_id=${restID}`;

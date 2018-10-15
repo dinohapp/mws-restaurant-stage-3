@@ -2,7 +2,7 @@
 
 var restaurant = void 0;
 var reviews = void 0;
-var map;
+var map = void 0;
 
 if (navigator.serviceWorker) {
   window.addEventListener('load', function () {
@@ -62,29 +62,27 @@ var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
 /**
  * Get current reviews from page URL.
  */
-var fetchReviewsFromURL = function fetchReviewsFromURL(callback) {
-  if (self.reviews) {
-    // restaurant already fetched!
-    callback(null, self.reviews);
+/*const fetchReviewsFromURL = (callback) => {
+  if (self.reviews) { // restaurant already fetched!
+    callback(null, self.reviews)
     return;
   }
-  var id = getParameterByName('restaurant_id');
-  if (!restaurant_id) {
-    // no id found in URL
-    error = 'No review in URL';
+  const id = getParameterByName('restaurant_id');
+  if (!restaurant_id) { // no id found in URL
+    error = 'No review in URL'
     callback(error, null);
   } else {
-    DBHelper.fetchReviewsById(id, function (error, reveiws) {
+    DBHelper.fetchReviewsById(id, (error, reveiws) => {
       self.reviews = reviews;
       if (!reviews) {
         console.error(error);
         return;
       }
       fillReviewsHTML();
-      callback(null, reviews);
+      callback(null, reviews)
     });
   }
-};
+}*/
 
 /**
  * Create restaurant HTML and add it to the webpage
@@ -130,7 +128,10 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  DBHelper.fetchReviews(restaurant.id).then(function (reviews) {
+    self.reviews = reviews;
+    fillReviewsHTML();
+  });
 };
 
 /**
@@ -161,6 +162,7 @@ var fillRestaurantHoursHTML = function fillRestaurantHoursHTML() {
 var fillReviewsHTML = function fillReviewsHTML() {
   var reviews = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.reviews;
 
+  console.log(reviews);
   var container = document.getElementById('reviews-container');
   var title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -183,14 +185,16 @@ var fillReviewsHTML = function fillReviewsHTML() {
 /**
  * Create review HTML and add it to the webpage.
  */
-var createReviewHTML = function createReviewHTML(review) {
+var createReviewHTML = function createReviewHTML() {
+  var review = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.reviews[revID];
+
   var li = document.createElement('li');
   var name = document.createElement('p');
   name.innerHTML = review.name;
   li.appendChild(name);
 
   var date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = '' + new Date(review.createdAt).toLocaleString();
   li.appendChild(date);
 
   var rating = document.createElement('p');
@@ -243,3 +247,6 @@ var addReview = function addReview(event) {
   event.preventDefault();
   console.log('ADD REVIEW LOGIC');
 };
+
+var restID = getParameterByName('id');
+var revID = 'restaurant_id=' + restID;
