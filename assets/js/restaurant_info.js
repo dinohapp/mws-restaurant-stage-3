@@ -87,25 +87,26 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
-    const fav = document.createElement('button');
+/*const fav = document.createElement('button');
   fav.className = 'favButton';
-  fav.innerHTML = '☆';//&#2605-06
-  name.append(fav);
+  fav.innerHTML = '☆';
+  li.append(fav);
   fav.setAttribute('aria-label', 'add restaurant as favorite');
   fav.onclick = function(){
-    if(restaurant.is_favorite == false) {
-      restaurant.is_favorite = true;
+    let isFav = restaurant.is_favorite;
+    if(isFav == false) {
+      isFav = true;
       fav.innerHTML = '★';
       fav.classList.toggle("isFavTrue");
     }
     else {
-      restaurant.is_favorite = false;
+      isFav = false;
       fav.innerHTML = '☆';
 //      fav.classList.toggle("isFavFalse");
       }
-            //const favToggle = restaurant.is_favorite = true;
-      //DBHelper.toggleFavorite(restaurant.id, favToggle);
-    }
+      //const favToggle = restaurant.is_favorite = true;
+      DBHelper.toggleFavorite(restaurant.id, isFav);
+    }*/
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;

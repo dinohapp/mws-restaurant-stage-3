@@ -7,6 +7,7 @@ import {Store, set, get, keys} from 'idb-keyval';
 
 
 const restaurantsDB = new Store('restaurantsDB', 'restaurants');
+const reviewsDB = new Store('reviewsDB', 'reviews');
 
 class DBHelper {
 
@@ -54,17 +55,34 @@ object format
     return(get('restaurants', restaurantsDB))
     .then(function(restaurants){
        if (restaurants) {
-          return (callback(null, restaurants), restaurants)
+          return (restaurants, callback(null, restaurants))
+       }
+       return fetch(DBHelper.DATABASE_URL)
+      .then(response => response.json())
+          .then(restaurants => {
+            restaurants.forEach(restaurant => {
+            set(restaurant.id, restaurant, restaurantsDB);
+          return (callback(null, restaurants), restaurants);
+        })
+      })
+    })
+  }
+
+
+/*  static fetchRestaurants(callback, id) {
+    return(get('restaurants', restaurantsDB))
+    .then(function(restaurants){
+       if (restaurants) {
+          return (restaurants, callback(null, restaurants))
        }
        return fetch(DBHelper.DATABASE_URL)
       .then(response => response.json())
           .then(function setRest(rest) {
             set('restaurants', rest, restaurantsDB);
-          return (callback(null, restaurants), rest);
+          return (callback(null, rest), rest);
         })
       });
-    }
-
+    }*/
 
 /* static idbRestaurantHandler() {
   const restaurantsDB = new Store('restaurantsDB', 'restaurants');
@@ -80,19 +98,23 @@ object format
 };*/
 
 
-  static fetchReviews(callback, id) {
-    return(get('reviews', restaurantsDB))
+  static fetchReviews(callback, rest_id) {
+    return(get('reviews', reviewsDB))
     .then(function(reviews){
        if (reviews) {
-          return reviews
+          return reviews;
        }
        return fetch(DBHelper.DATABASE_REVIEWS_URL)
       .then(response => response.json())
-          .then(setRev => {
-            set('reviews', setRev, restaurantsDB);
-        return setRev;
+          .then(reviews => {
+            console.log(reviews);
+            reviews.forEach(review => {
+              console.log(review);
+            set(review.id, review, reviewsDB);
+          return (callback(null, reviews), reviews);
         })
       })
+     })
     }
 
 /*
@@ -202,11 +224,10 @@ object format
       method: 'PUT'
     })
     .then(() => {
-      const restaurantsDB = new Store('restaurantsDB', 'restaurants');
       get(id, restaurantsDB)
       .then(restaurant => {
-        //restaurant.is_favorite = favToggle;
-        set(restaurant.is_favorite, favToggle, restaurantsDB);
+        restaurant.is_favorite = favToggle;
+        set(id, restaurant, restaurantsDB);
       })
     })
    }

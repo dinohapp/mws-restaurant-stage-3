@@ -93,24 +93,26 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   var name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
-  var fav = document.createElement('button');
-  fav.className = 'favButton';
-  fav.innerHTML = '☆'; //&#2605-06
-  name.append(fav);
-  fav.setAttribute('aria-label', 'add restaurant as favorite');
-  fav.onclick = function () {
-    if (restaurant.is_favorite == false) {
-      restaurant.is_favorite = true;
-      fav.innerHTML = '★';
-      fav.classList.toggle("isFavTrue");
-    } else {
-      restaurant.is_favorite = false;
-      fav.innerHTML = '☆';
-      //      fav.classList.toggle("isFavFalse");
-    }
-    //const favToggle = restaurant.is_favorite = true;
-    //DBHelper.toggleFavorite(restaurant.id, favToggle);
-  };
+  /*const fav = document.createElement('button');
+    fav.className = 'favButton';
+    fav.innerHTML = '☆';
+    li.append(fav);
+    fav.setAttribute('aria-label', 'add restaurant as favorite');
+    fav.onclick = function(){
+      let isFav = restaurant.is_favorite;
+      if(isFav == false) {
+        isFav = true;
+        fav.innerHTML = '★';
+        fav.classList.toggle("isFavTrue");
+      }
+      else {
+        isFav = false;
+        fav.innerHTML = '☆';
+  //      fav.classList.toggle("isFavFalse");
+        }
+        //const favToggle = restaurant.is_favorite = true;
+        DBHelper.toggleFavorite(restaurant.id, isFav);
+      }*/
 
   var address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
