@@ -1,4 +1,5 @@
 let restaurants,
+  reviews,
   neighborhoods,
   cuisines;
 var map;

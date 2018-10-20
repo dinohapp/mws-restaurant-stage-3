@@ -10,7 +10,6 @@ const restaurantsDB = new Store('restaurantsDB', 'restaurants');
 const reviewsDB = new Store('reviewsDB', 'reviews');
 
 class DBHelper {
-
   /**
    * Database URL.
    * Change this to restaurants.json file location on your server.
@@ -52,18 +51,18 @@ object format
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback, id) {
-    return(get('restaurants', restaurantsDB))
-    .then(function(restaurants){
-       if (restaurants) {
-          return (restaurants, callback(null, restaurants))
+    return(get('id', restaurantsDB))
+    .then(dbRestaurants => {
+       if (dbRestaurants) {
+          return (dbRestaurants, callback(null, dbRestaurants))
        }
        return fetch(DBHelper.DATABASE_URL)
       .then(response => response.json())
           .then(restaurants => {
             restaurants.forEach(restaurant => {
             set(restaurant.id, restaurant, restaurantsDB);
-          return (callback(null, restaurants), restaurants);
         })
+          return (callback(null, restaurants), restaurants);
       })
     })
   }
@@ -99,20 +98,18 @@ object format
 
 
   static fetchReviews(callback, rest_id) {
-    return(get('reviews', reviewsDB))
-    .then(function(reviews){
-       if (reviews) {
-          return reviews;
+    return(get('rest_id', reviewsDB))
+    .then(dbReviews => {
+       if (dbReviews) {
+          return dbReviews;
        }
        return fetch(DBHelper.DATABASE_REVIEWS_URL)
       .then(response => response.json())
           .then(reviews => {
-            console.log(reviews);
-            reviews.forEach(review => {
-              console.log(review);
-            set(review.id, review, reviewsDB);
-          return (callback(null, reviews), reviews);
+             reviews.forEach(review => {
+             set(review.id, review, reviewsDB);
         })
+        return (null, reviews); //callback(null, reviews)
       })
      })
     }
@@ -242,7 +239,6 @@ object format
         callback(error, null);
       } else {
           const restaurant = restaurants.find(r => r.id == id);
-//        const restaurant = restaurants.find(r => r.id == id);
         if (restaurant) { // Got the restaurant
           callback(null, restaurant);
         } else { // Restaurant does not exist in the database
@@ -258,24 +254,15 @@ object format
       if (error) {
         callback(error, null);
       } else {
-          const review = reviews.find(r => r.id == id.restaurant_id);
-/*          const review2 = reviews.find(r => r.restaurant_id == id);
-          const review3 = reviews.find(r => r.id == id);
-          console.log(review);
-          console.log(review2);
-          console.log(review3);*/
-//        const restaurant = restaurants.find(r => r.id == id);
+          const review = reviews.find(r => r.restaurant_id == id);
         if (review) { // Got the restaurant
           callback(null, review);
-          console.log(review);
         } else { // Restaurant does not exist in the database
           callback('Review does not exist', null);
-          console.log('no reviews')
         }
       }
       });
   }
-
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
    */
@@ -399,6 +386,28 @@ object format
     );
     return marker;
   }
+
+static gl(id) {
+  let result = [];
+  keys(restaurantsDB).then(keys => {
+    keys.forEach(key => {
+      get(key, restaurantsDB)
+        .then(restaurantn => {
+          result.push(restaurantn);
+        })
+  })
+})
+return console.log(result);
+/*  get(id, reviewsDB)
+  .then(restaurantn => {
+  return console.log(restaurantn.name)
+  })
+
+DBHelper.gl()
+
+  */
+};
+
 }
 window.DBHelper = DBHelper;
 /*

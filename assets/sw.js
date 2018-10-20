@@ -1,4 +1,4 @@
-import {Store, set, get} from 'idb-keyval';
+//import {Store, set, get} from 'idb-keyval';
 
 self.addEventListener('install', function(event) {
 	let cachedURLs = [

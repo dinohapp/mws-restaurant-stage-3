@@ -1,6 +1,7 @@
 'use strict';
 
 var restaurants = void 0,
+    reviews = void 0,
     neighborhoods = void 0,
     cuisines = void 0;
 var map;

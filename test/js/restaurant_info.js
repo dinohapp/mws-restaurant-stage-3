@@ -1,7 +1,7 @@
 'use strict';
 
 var restaurant = void 0;
-var reviews = void 0;
+var review = void 0;
 var map = void 0;
 
 if (navigator.serviceWorker) {
@@ -93,25 +93,47 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   var name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
-  /*const fav = document.createElement('button');
-    fav.className = 'favButton';
+  //is_favorite
+  var fav = document.createElement('button');
+  fav.className = 'favButton';
+  name.append(fav);
+  if (restaurant.is_favorite == 'true') {
+    fav.innerHTML = '★';
+  } else {
     fav.innerHTML = '☆';
-    li.append(fav);
+  }
+  fav.setAttribute('aria-label', 'add restaurant as favorite');
+  fav.onclick = function () {
+    if (restaurant.is_favorite == 'false') {
+      restaurant.is_favorite = 'true';
+      //fav.classList.toggle("isFavTrue");
+      fav.innerHTML = '★';
+    } else {
+      restaurant.is_favorite = 'false';
+      fav.innerHTML = '☆';
+      //      fav.classList.toggle("isFavFalse");
+    }
+    DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite);
+  };
+
+  /*    const fav = document.createElement('button');
+    fav.className = 'favButton';
+    fav.innerHTML = '☆';//&#2605-06
+    name.append(fav);
     fav.setAttribute('aria-label', 'add restaurant as favorite');
     fav.onclick = function(){
-      let isFav = restaurant.is_favorite;
-      if(isFav == false) {
-        isFav = true;
+      if(restaurant.is_favorite == false) {
+        restaurant.is_favorite = true;
         fav.innerHTML = '★';
         fav.classList.toggle("isFavTrue");
       }
       else {
-        isFav = false;
+        restaurant.is_favorite = false;
         fav.innerHTML = '☆';
   //      fav.classList.toggle("isFavFalse");
         }
-        //const favToggle = restaurant.is_favorite = true;
-        DBHelper.toggleFavorite(restaurant.id, isFav);
+              //const favToggle = restaurant.is_favorite = true;
+        //DBHelper.toggleFavorite(restaurant.id, favToggle);
       }*/
 
   var address = document.getElementById('restaurant-address');
@@ -130,9 +152,9 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  DBHelper.fetchReviews(restaurant.id).then(function (reviews) {
+  DBHelper.fetchReviews().then(function (reviews) {
     self.reviews = reviews;
-    fillReviewsHTML();
+    fillReviewsHTML(reviews);
   });
 };
 
@@ -161,10 +183,8 @@ var fillRestaurantHoursHTML = function fillRestaurantHoursHTML() {
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-var fillReviewsHTML = function fillReviewsHTML() {
-  var reviews = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.reviews;
-
-  console.log(reviews);
+var fillReviewsHTML = function fillReviewsHTML(reviews) {
+  self.reviews = reviews;
   var container = document.getElementById('reviews-container');
   var title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -179,7 +199,9 @@ var fillReviewsHTML = function fillReviewsHTML() {
 
   var ul = document.getElementById('reviews-list');
   reviews.forEach(function (review) {
-    ul.appendChild(createReviewHTML(review));
+    if (review.restaurant_id == restaurant.id) {
+      ul.appendChild(createReviewHTML(review));
+    }
   });
   container.appendChild(ul);
 };
@@ -188,7 +210,7 @@ var fillReviewsHTML = function fillReviewsHTML() {
  * Create review HTML and add it to the webpage.
  */
 var createReviewHTML = function createReviewHTML() {
-  var review = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.reviews[revID];
+  var review = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.reviews;
 
   var li = document.createElement('li');
   var name = document.createElement('p');
@@ -247,8 +269,5 @@ var addReviewToggle = function addReviewToggle() {
 
 var addReview = function addReview(event) {
   event.preventDefault();
-  console.log('ADD REVIEW LOGIC');
+  //TODO 'ADD REVIEW LOGIC'
 };
-
-var restID = getParameterByName('id');
-var revID = 'restaurant_id=' + restID;

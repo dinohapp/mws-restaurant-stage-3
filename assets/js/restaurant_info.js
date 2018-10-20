@@ -1,5 +1,5 @@
 let restaurant;
-let reviews;
+let review;
 let map;
 
 if (navigator.serviceWorker) {
@@ -87,25 +87,46 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
-/*const fav = document.createElement('button');
+
+//is_favorite
+  let fav = document.createElement('button');
   fav.className = 'favButton';
-  fav.innerHTML = '☆';
-  li.append(fav);
+  name.append(fav);
+  if (restaurant.is_favorite == 'true') {fav.innerHTML = '★'}
+    else {fav.innerHTML = '☆';}
   fav.setAttribute('aria-label', 'add restaurant as favorite');
   fav.onclick = function(){
-    let isFav = restaurant.is_favorite;
-    if(isFav == false) {
-      isFav = true;
+    if(restaurant.is_favorite == 'false') {
+      restaurant.is_favorite = 'true';
+      //fav.classList.toggle("isFavTrue");
+      fav.innerHTML = '★';
+    }
+    else {
+      restaurant.is_favorite = 'false';
+      fav.innerHTML = '☆';
+//      fav.classList.toggle("isFavFalse");
+      }
+      DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite);
+    }
+
+/*    const fav = document.createElement('button');
+  fav.className = 'favButton';
+  fav.innerHTML = '☆';//&#2605-06
+  name.append(fav);
+  fav.setAttribute('aria-label', 'add restaurant as favorite');
+  fav.onclick = function(){
+    if(restaurant.is_favorite == false) {
+      restaurant.is_favorite = true;
       fav.innerHTML = '★';
       fav.classList.toggle("isFavTrue");
     }
     else {
-      isFav = false;
+      restaurant.is_favorite = false;
       fav.innerHTML = '☆';
 //      fav.classList.toggle("isFavFalse");
       }
-      //const favToggle = restaurant.is_favorite = true;
-      DBHelper.toggleFavorite(restaurant.id, isFav);
+            //const favToggle = restaurant.is_favorite = true;
+      //DBHelper.toggleFavorite(restaurant.id, favToggle);
     }*/
 
   const address = document.getElementById('restaurant-address');
@@ -125,10 +146,10 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  DBHelper.fetchReviews(restaurant.id)
+  DBHelper.fetchReviews()
   .then(reviews => {
     self.reviews = reviews;
-    fillReviewsHTML()
+    fillReviewsHTML(reviews)
   })
 }
 
@@ -155,8 +176,8 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-const fillReviewsHTML = (reviews = self.reviews) => {
-  console.log(reviews);
+const fillReviewsHTML = (reviews) => {
+  self.reviews = reviews;
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -171,7 +192,9 @@ const fillReviewsHTML = (reviews = self.reviews) => {
 
   const ul = document.getElementById('reviews-list');
   reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
+    if (review.restaurant_id == restaurant.id) {
+    ul.appendChild(createReviewHTML(review))
+    }
   });
   container.appendChild(ul);
 }
@@ -179,7 +202,7 @@ const fillReviewsHTML = (reviews = self.reviews) => {
 /**
  * Create review HTML and add it to the webpage.
  */
-const createReviewHTML = (review = self.reviews[revID]) => {
+const createReviewHTML = (review = self.reviews) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.innerHTML = review.name;
@@ -238,8 +261,5 @@ const addReviewToggle = () => {
 
 const addReview = (event) => {
   event.preventDefault();
-  console.log('ADD REVIEW LOGIC');
+  //TODO 'ADD REVIEW LOGIC'
 }
-
-let restID = getParameterByName('id');
-let revID = `restaurant_id=${restID}`;
