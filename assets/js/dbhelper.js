@@ -446,7 +446,7 @@ fetch(DBHelper.DATABASE_REVIEWS_URL, {
     })
 }
 
-
+//git test
 /*static processNewReview(newReview) {
   let review = JSON.parse(newReview);
   return keys(reviewsDB).then(dbKeysArray => {
