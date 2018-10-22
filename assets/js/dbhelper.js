@@ -1,13 +1,14 @@
 import {Store, set, get, keys} from 'idb-keyval';
 
+const restaurantsDB = new Store('restaurantsDB', 'restaurants');
+const reviewsDB = new Store('reviewsDB', 'reviews');
+
+let reviewsToPush = [],
+newReviewId;
+
 /**
  * Common database helper functions.
  */
-
-
-
-const restaurantsDB = new Store('restaurantsDB', 'restaurants');
-const reviewsDB = new Store('reviewsDB', 'reviews');
 
 class DBHelper {
   /**
@@ -262,6 +263,7 @@ object format
         }
       }
       });
+    DBHelper.getNewReviewID();
   }
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
@@ -407,6 +409,81 @@ DBHelper.gl()
 
   */
 };
+
+static pushReviewsWhenOnline() {
+
+//IF PUSH successful localStorage.clear();
+const offlineReviews = {...localStorage};
+console.log(offlineReviews);
+/*    offlineReviews.forEach(review => {
+      DBHelper.pushReviewsToServer(JSON.parse(review));
+    })*/
+}
+
+static processNewReview(newReview) {
+  let review = JSON.parse(newReview);
+  return keys(reviewsDB).then(dbKeysArray => {
+    review.id = dbKeysArray.length+reviewsToPush.length+1;
+      if(navigator.onLine == false && localStorage.length != 0) {
+        localStorage.setItem(review.id, JSON.stringify(review));
+        DBHelper.pushReviewsToDB(review);
+      }else {
+        DBHelper.pushReviewsToDB(review);
+        DBHelper.pushReviewsToServer(review);
+      }
+  })
+}
+
+static pushReviewsToDB(review) {
+    console.log('pushing revew # to db', review.id);
+    set(review.id, review, reviewsDB);
+}
+
+static pushReviewsToServer(review) {
+fetch(DBHelper.DATABASE_REVIEWS_URL, {
+      method: 'POST',
+      body: JSON.stringify(review)
+    })
+}
+
+
+/*static processNewReview(newReview) {
+  let review = JSON.parse(newReview);
+  return keys(reviewsDB).then(dbKeysArray => {
+    review.id = dbKeysArray.length+reviewsToPush.length+1;
+  DBHelper.pushReviewsToDB(review);
+  })
+}
+
+static pushReviewsToDB(review) {
+    console.log('pushing revew # to db', review.id);
+    set(review.id, review, reviewsDB);
+}*/
+
+/*static getNewReviewID() {
+  return keys(reviewsDB).then(dbKeysArray => {
+    self.newReviewId = dbKeysArray.length+reviewsToPush.length+1;
+    return newReviewId;
+  })
+}*/
+/*static processNewReview(newReview) {
+  keys(reviewsDB).then(array => {
+    newReviewId = array.length+reviewsToPush.length+1;
+  });
+  let review = JSON.parse(newReview);
+  review["id"] = newReviewId;
+  review = JSON.stringify(review);
+  reviewsToPush.push(review);
+  DBHelper.pushReviewsToDB(reviewsToPush);
+}
+
+static pushReviewsToDB(reviewsArray) {
+    reviewsArray.forEach(review => {
+    //console.log(review);
+    set(review.id, review, reviewsDB);
+  });
+}*/
+
 
 }
 window.DBHelper = DBHelper;

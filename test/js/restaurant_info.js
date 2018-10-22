@@ -1,8 +1,8 @@
 'use strict';
 
-var restaurant = void 0;
-var review = void 0;
-var map = void 0;
+var restaurant = void 0,
+    review = void 0,
+    map = void 0;
 
 if (navigator.serviceWorker) {
   window.addEventListener('load', function () {
@@ -209,9 +209,7 @@ var fillReviewsHTML = function fillReviewsHTML(reviews) {
 /**
  * Create review HTML and add it to the webpage.
  */
-var createReviewHTML = function createReviewHTML() {
-  var review = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.reviews;
-
+var createReviewHTML = function createReviewHTML(review) {
   var li = document.createElement('li');
   var name = document.createElement('p');
   name.innerHTML = review.name;
@@ -259,15 +257,56 @@ var getParameterByName = function getParameterByName(name, url) {
 };
 
 var addReviewToggle = function addReviewToggle() {
-  var reviewToggle = document.getElementById('addReview');
-  if (reviewToggle.style.display == 'none') {
-    reviewToggle.style.display = 'block';
-  } else {
+  var reviewToggle = document.getElementById('reviewToggle');
+  if (reviewToggle.style.display == 'block') {
     reviewToggle.style.display = 'none';
+  } else {
+    reviewToggle.style.display = 'block';
   }
 };
 
-var addReview = function addReview(event) {
+/*
+object format
+{
+    "comments": <comment_text>
+    createdAt
+    id
+    "name": <reviewer_name>,
+    "rating": <rating>,
+    "restaurant_id": <restaurant_id>,
+    updatedAt
+
+
+}
+*/
+
+var addReview = function addReview() {
   event.preventDefault();
-  //TODO 'ADD REVIEW LOGIC'
+  var restaurant_id = restaurant.id;
+  var name = document.getElementById('author').value;
+  var rating = document.querySelector('#rating option:checked').value;
+  var comments = document.getElementById('comment').value;
+  var id = '';
+  var reviewObject = {
+    id: id,
+    restaurant_id: restaurant_id,
+    name: name,
+    createdAt: new Date(),
+    comments: comments,
+    rating: rating
+  };
+  window.addEventListener("online", function () {
+    DBHelper.pushReviewsWhenOnline();
+    //TODO remove notificaiton about offline comment once its been pushed
+  });
+  //TODO add a comment that review will be pushed when online
+  DBHelper.processNewReview(JSON.stringify(reviewObject));
+
+  var reviewsContainer = document.getElementById('reviews-container');
+  var reviewsList = document.getElementById('reviews-list');
+  reviewsList.insertBefore(createReviewHTML(reviewObject), reviewsList.firstChild);
+  reviewsContainer.appendChild(reviewsList);
+
+  document.getElementById('addReviewForm').reset();
+  addReviewToggle();
 };

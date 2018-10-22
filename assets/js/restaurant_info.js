@@ -1,6 +1,6 @@
-let restaurant;
-let review;
-let map;
+let restaurant,
+ review,
+ map;
 
 if (navigator.serviceWorker) {
   window.addEventListener('load', function() {
@@ -202,7 +202,7 @@ const fillReviewsHTML = (reviews) => {
 /**
  * Create review HTML and add it to the webpage.
  */
-const createReviewHTML = (review = self.reviews) => {
+const createReviewHTML = (review) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.innerHTML = review.name;
@@ -251,15 +251,56 @@ const getParameterByName = (name, url) => {
 }
 
 const addReviewToggle = () => {
-  const reviewToggle = document.getElementById('addReview');
-  if(reviewToggle.style.display == 'none') {
-    reviewToggle.style.display = 'block';
-  } else {
+  const reviewToggle = document.getElementById('reviewToggle');
+  if(reviewToggle.style.display == 'block') {
     reviewToggle.style.display = 'none';
+  } else {
+    reviewToggle.style.display = 'block';
   }
 }
 
-const addReview = (event) => {
+/*
+object format
+{
+    "comments": <comment_text>
+    createdAt
+    id
+    "name": <reviewer_name>,
+    "rating": <rating>,
+    "restaurant_id": <restaurant_id>,
+    updatedAt
+
+
+}
+*/
+
+const addReview = () => {
   event.preventDefault();
-  //TODO 'ADD REVIEW LOGIC'
+  let restaurant_id = restaurant.id;
+  let name = document.getElementById('author').value;
+  let rating = document.querySelector('#rating option:checked').value;
+  let comments = document.getElementById('comment').value;
+  let id = '';
+  const reviewObject = {
+    id: id,
+    restaurant_id: restaurant_id,
+    name: name,
+    createdAt: new Date(),
+    comments: comments,
+    rating: rating
+  }
+    window.addEventListener("online", () => {
+      DBHelper.pushReviewsWhenOnline();
+    //TODO remove notificaiton about offline comment once its been pushed
+    })
+    //TODO add a comment that review will be pushed when online
+    DBHelper.processNewReview(JSON.stringify(reviewObject));
+
+  const reviewsContainer = document.getElementById('reviews-container');
+  const reviewsList = document.getElementById('reviews-list');
+  reviewsList.insertBefore(createReviewHTML(reviewObject), reviewsList.firstChild);
+  reviewsContainer.appendChild(reviewsList);
+
+  document.getElementById('addReviewForm').reset();
+  addReviewToggle();
 }

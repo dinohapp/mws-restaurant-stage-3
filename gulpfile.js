@@ -50,16 +50,16 @@ gulp.task('css', function() {
 		.pipe(gulp.dest('./test/css'));
 });
 
-gulp.task('sw', function() {
+/*gulp.task('sw', function() {
 		gulp.src([`./assets/sw.js`])
 		.pipe(webpack({
 			mode: 'development',
 			output: {filename: 'sw.js'}
 		}))
 		.pipe(gulp.dest('./test'));
-});
+});*/
 
-/*gulp.task('sw', function() {
+gulp.task('sw', function() {
 		gulp.src('./assets/sw.js')
 		.pipe(babel({
   			"presets": [
@@ -68,21 +68,45 @@ gulp.task('sw', function() {
     			]
   				]
 			}))
-		//.pipe(streamify(uglify()))
+		.pipe(streamify(uglify()))
 		.pipe(gulp.dest('./test/'));
 });
-*/
+
 gulp.task('images', function() {
 	gulp.src('./assets/img/**/*.*')
 		.pipe(gulp.dest('./test/img'));
 });
 
 
+gulp.task('js', function() {
+	var files = [
+		'main.js',
+		'restaurant_info.js',
+		'lazysizes.min.js'
+		//'dbhelper.js',
+			];
+	function jss(file) {
+		gulp.src(`./assets/js/${file}`)
+		.pipe(babel({
+  			"presets": [
+    			["env"
+    			//, {"modules": false}
+    			]
+  				]
+			}))
+		//.pipe(streamify(uglify()))
+		.pipe(gulp.dest('./test/js'));
+	 };
+	 jss(files[0]);
+	 jss(files[1]);
+	 jss(files[2]);
+});
+
 /* gulp.task('js', function() {
 	var files = [
-		'dbhelper.js',
 		'main.js',
 		'restaurant_info.js'
+		//'dbhelper.js',
 			];
 	function jss(file) {
 		return browserify(`./assets/js/${file}`)
@@ -95,10 +119,10 @@ gulp.task('images', function() {
 	};
 	jss(files[0]);
 	jss(files[1]);
-	jss(files[2]);
-});
-*/
-gulp.task('js', function() {
+	//jss(files[2]);
+});*/
+
+/*gulp.task('js', function() {
 		gulp.src('./assets/js/*.js')
 		.pipe(babel({
   			"presets": [
@@ -110,26 +134,26 @@ gulp.task('js', function() {
 		//.pipe(streamify(uglify()))
 		.pipe(gulp.dest('./test/js/'));
 });
-
+*/
 
 /*gulp.task('js', function() {
 	var files = [
-		'dbhelper.js',
 		'main.js',
 		'restaurant_info.js'
+		//'dbhelper.js',
 			];
-//	function jss(file) {
+	function jss(file) {
 		var b = browserify({});
 		return b.bundle()
-		.pipe(vinyl_source(`./assets/js/${files[1]}`))
+		.pipe(vinyl_source(`./assets/js/${file}`))
 		.pipe(vinyl_buffer())
 		.transform(babelify, {presets: ['env']})
 		//.pipe(streamify(uglify()))
 		.pipe(gulp.dest('./test/js'));
 
-	// };
-	// jss(files[0]);
-	// jss(files[1]);
+	 };
+	 jss(files[0]);
+	 jss(files[1]);
 	// jss(files[2]);
 });*/
 
