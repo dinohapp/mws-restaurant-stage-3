@@ -68,7 +68,7 @@ gulp.task('sw', function() {
     			]
   				]
 			}))
-		.pipe(streamify(uglify()))
+		//.pipe(streamify(uglify()))
 		.pipe(gulp.dest('./test/'));
 });
 

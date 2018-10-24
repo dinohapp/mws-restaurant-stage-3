@@ -30,26 +30,27 @@ self.addEventListener('install', function(event) {
 		caches.open('v1').then(cache => {
 			return cache.addAll(cachedURLs);
 		})
-	);
+		)//.catch(error => {console.log("Error opening sw caches: " + error)}
 });
 
 
 self.addEventListener('fetch', event => {
 	event.respondWith(
-    caches.match(event.request).then(function(response) {
-      if (response) return response;
-      return fetch(event.request)
+    caches.match(event.request).then(response => {
+      	return response ||
+      fetch(event.request)
       .then(resp => {
       	if(!resp || resp.status !== 200 || resp.type !== 'basic') {
       		return resp;
       	}
+      	//return DBHelper.fetchRestaurants();
       	return caches.open('v1').then(cache => {
       		cache.put(event.request, resp.clone())
       		return resp;
       		})
       	})
       })
-    );
+    )//.catch(error => console.log(error));
    });
 
 

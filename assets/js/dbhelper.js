@@ -3,8 +3,8 @@ import {Store, set, get, keys} from 'idb-keyval';
 const restaurantsDB = new Store('restaurantsDB', 'restaurants');
 const reviewsDB = new Store('reviewsDB', 'reviews');
 
-let reviewsToPush = [],
-newReviewId;
+let reviewsToPush = [];
+let restaurants = [];
 
 /**
  * Common database helper functions.
@@ -37,7 +37,6 @@ object format
 }
 */
 
-   //***TODO FETCH REVIEWS FROM SERVER***//
   static get DATABASE_URL() {
     const port = 1337 // Change this to your server port
     return `http://localhost:${port}/restaurants`;
@@ -51,11 +50,35 @@ object format
   /**
    * Fetch all restaurants.
    */
-  static fetchRestaurants(callback, id) {
+
+  static fetchRestaurants() {
+    if(restaurants.length !== 0) {
+    keys(restaurantsDB).then(keys => {
+    keys.forEach(key => {
+      get(key, restaurantsDB)
+        .then(restaurantn => {
+          restaurants.push(restaurantn);
+          console.log(dbRestaurants);
+          return Promise.resolve(restaurants);
+        })
+      })
+    })
+    } else {
+      return fetch(DBHelper.DATABASE_URL)
+      .then(response => response.json())
+          .then(restaurants => {
+            restaurants.forEach(restaurant => {
+            set(restaurant.id, restaurant, restaurantsDB);
+        })
+          return Promise.resolve(restaurants);
+      })
+    }
+  }
+/*  static fetchRestaurants(callback, id) {
     return(get('id', restaurantsDB))
     .then(dbRestaurants => {
        if (dbRestaurants) {
-          return (dbRestaurants, callback(null, dbRestaurants))
+          return (callback(null, dbRestaurants), dbRestaurants)
        }
        return fetch(DBHelper.DATABASE_URL)
       .then(response => response.json())
@@ -66,8 +89,34 @@ object format
           return (callback(null, restaurants), restaurants);
       })
     })
-  }
+  }*/
 
+/*static getRestaurantsFromServer() {
+      fetch(DBHelper.DATABASE_URL)
+      .then(response => response.json())
+          .then(restaurants => {
+            restaurants.forEach(restaurant => {
+            set(restaurant.id, restaurant, restaurantsDB);
+        })
+          return (callback(null, restaurants), restaurants);
+      })
+}
+
+  static fetchRestaurants(callback, id) {
+    keys(restaurantsDB).then(keys => {
+    keys.forEach(key => {
+      get(key, restaurantsDB)
+        .then(restaurantn => {
+          dbRestaurants.push(restaurantn);
+          return (dbRestaurants);
+        })
+      })
+    })
+       if (dbRestaurants.length !== 0) {
+          return (callback(null, dbRestaurants), dbRestaurants);
+       }
+       return DBHelper.getRestaurantsFromServer();
+  }*/
 
 /*  static fetchRestaurants(callback, id) {
     return(get('restaurants', restaurantsDB))
@@ -98,7 +147,26 @@ object format
 };*/
 
 
-  static fetchReviews(callback, rest_id) {
+
+
+  static fetchReviews() {
+    return(get('rest_id', reviewsDB))
+    .then(dbReviews => {
+       if (dbReviews) {
+          return Promise.resolve(dbReviews);
+       }
+       return fetch(DBHelper.DATABASE_REVIEWS_URL)
+      .then(response => response.json())
+          .then(reviews => {
+             reviews.forEach(review => {
+             set(review.id, review, reviewsDB);
+        })
+        return Promise.resolve(reviews);
+      })
+     })
+    }
+
+/*  static fetchReviews(callback, rest_id) {
     return(get('rest_id', reviewsDB))
     .then(dbReviews => {
        if (dbReviews) {
@@ -113,7 +181,7 @@ object format
         return (null, reviews); //callback(null, reviews)
       })
      })
-    }
+    }*/
 
 /*
   static fetchReviews(callback, id) {
@@ -233,124 +301,91 @@ object format
   /**
    * Fetch a restaurant by its ID.
    */
-  static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-          const restaurant = restaurants.find(r => r.id == id);
-        if (restaurant) { // Got the restaurant
-          callback(null, restaurant);
-        } else { // Restaurant does not exist in the database
-          callback('Restaurant does not exist', null);
-        }
-      }
-      })//    }, id);
+  static fetchRestaurantById(id) {
+/*        return(get(id, restaurantsDB))
+    .then(dbRestaurant => {
+      if (dbRestaurant) {
+          return dbRestaurant;
+        } else {*/
+      return DBHelper.fetchRestaurants()
+      .then(restaurants => {
+          const rid = restaurants.find(r => r.id == id);
+      return Promise.resolve(rid);
+      //}
+    })
   }
 
-  static fetchReviewsById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    DBHelper.fetchReviews((error, reviews) => {
-      if (error) {
-        callback(error, null);
-      } else {
-          const review = reviews.find(r => r.restaurant_id == id);
-        if (review) { // Got the restaurant
-          callback(null, review);
-        } else { // Restaurant does not exist in the database
-          callback('Review does not exist', null);
-        }
-      }
-      });
-    DBHelper.getNewReviewID();
-  }
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
    */
-  static fetchRestaurantByCuisine(cuisine, callback) {
+  static fetchRestaurantByCuisine(cuisine) {
     // Fetch all restaurants  with proper error handling
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
+    return DBHelper.fetchRestaurants()
+    .then(restaurants => {
         // Filter restaurants to have only given cuisine type
-        const results = restaurants.filter(r => r.cuisine_type == cuisine);
-        callback(null, results);
-      }
-    });
-  }
+        const cuisine = restaurants.filter(r => r.cuisine_type == cuisine);
+        return Promise.resolve(cuisine);
+      })
+    }
 
   /**
    * Fetch restaurants by a neighborhood with proper error handling.
    */
-  static fetchRestaurantByNeighborhood(neighborhood, callback) {
+  static fetchRestaurantByNeighborhood(neighborhood) {
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
+    return DBHelper.fetchRestaurants()
+    .then(restaurants => {
         // Filter restaurants to have only given neighborhood
-        const results = restaurants.filter(r => r.neighborhood == neighborhood);
-        callback(null, results);
-      }
-    });
+       const neighborhood = restaurants.filter(r => r.neighborhood == neighborhood);
+       return Promise.resolve(neighborhood);
+    })
   }
 
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
    */
-  static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
+  static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood) {
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        let results = restaurants
+    return DBHelper.fetchRestaurants()
+    .then(restaurants => {
+        let results = restaurants;
         if (cuisine != 'all') { // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
         if (neighborhood != 'all') { // filter by neighborhood
           results = results.filter(r => r.neighborhood == neighborhood);
         }
-        callback(null, results);
-      }
+        return Promise.resolve(results);
     });
   }
 
   /**
    * Fetch all neighborhoods with proper error handling.
    */
-  static fetchNeighborhoods(callback) {
+  static fetchNeighborhoods() {
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
+    return DBHelper.fetchRestaurants()
+    .then(restaurants => {
         // Get all neighborhoods from all restaurants
         const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood)
         // Remove duplicates from neighborhoods
         const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i)
-        callback(null, uniqueNeighborhoods);
-      }
+        return Promise.resolve(uniqueNeighborhoods);
     });
   }
 
   /**
    * Fetch all cuisines with proper error handling.
    */
-  static fetchCuisines(callback) {
+  static fetchCuisines() {
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
+    return DBHelper.fetchRestaurants()
+    .then(restaurants => {
         // Get all cuisines from all restaurants
         const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type)
         // Remove duplicates from cuisines
         const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
-        callback(null, uniqueCuisines);
-      }
+        return Promise.resolve(uniqueCuisines);
     });
   }
 
@@ -389,7 +424,9 @@ object format
     return marker;
   }
 
-static gl(id) {
+static gl() {
+  return new Promise((resolve, reject) => {
+  //func(resolve, reject) => {
   let result = [];
   keys(restaurantsDB).then(keys => {
     keys.forEach(key => {
@@ -397,18 +434,27 @@ static gl(id) {
         .then(restaurantn => {
           result.push(restaurantn);
         })
+    })
   })
-})
-return console.log(result);
-/*  get(id, reviewsDB)
-  .then(restaurantn => {
-  return console.log(restaurantn.name)
+  //return result;
+  resolve(result);
+  //}
   })
-
-DBHelper.gl()
-
-  */
+  //resolve(result);
 };
+
+/*static gl() {
+  let result = [];
+  keys(restaurantsDB).then(keys => {
+    keys.forEach(key => {
+      get(key, restaurantsDB)
+        .then(restaurantn => {
+          result.push(restaurantn);
+        })
+    })
+  })
+  return result;
+};*/
 
 static pushReviewsWhenOnline() {
 
@@ -426,6 +472,7 @@ static processNewReview(newReview) {
     review.id = dbKeysArray.length+reviewsToPush.length+1;
       if(navigator.onLine == false && localStorage.length != 0) {
         localStorage.setItem(review.id, JSON.stringify(review));
+        reviewsToPush.push(review);
         DBHelper.pushReviewsToDB(review);
       }else {
         DBHelper.pushReviewsToDB(review);

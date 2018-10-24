@@ -2,22 +2,12 @@ let restaurant,
  review,
  map;
 
-if (navigator.serviceWorker) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('../sw.js').catch(function(error) {
-    console.log('SW registration failed with error: ' + error);
-    })
-  });
-};
-
 /**
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
+  fetchRestaurantFromURL()
+  .then(restaurant => {
       self.map = new google.maps.Map(document.getElementById('map'), {
         zoom: 16,
         center: restaurant.latlng,
@@ -25,31 +15,29 @@ window.initMap = () => {
       });
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
+    })
+  .catch(error => console.log('map error' + error));
 }
 
 /**
  * Get current restaurant from page URL.
  */
-const fetchRestaurantFromURL = (callback) => {
+const fetchRestaurantFromURL = () => {
   if (self.restaurant) { // restaurant already fetched!
-    callback(null, self.restaurant)
-    return;
+    return Promise.resolve(self.restaurant);
   }
   const id = getParameterByName('id');
   if (!id) { // no id found in URL
-    error = 'No restaurant id in URL'
-    callback(error, null);
+    return Promise.reject('No restaurant id in URL')
   } else {
-    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-      self.restaurant = restaurant;
-      if (!restaurant) {
-        console.error(error);
-        return;
+    return DBHelper.fetchRestaurantById(id)
+    .then(restaurant => {
+      if (restaurant) {
+        self.restaurant = restaurant;
+        fillRestaurantHTML();
+        return Promise.resolve(restaurant);
       }
-      fillRestaurantHTML();
-      callback(null, restaurant)
+      return Promise.reject('error getting restaurant with that id')
     });
   }
 }
@@ -304,3 +292,15 @@ const addReview = () => {
   document.getElementById('addReviewForm').reset();
   addReviewToggle();
 }
+
+/**
+ * Register service worker
+ */
+
+if (navigator.serviceWorker) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('../sw.js').catch(function(error) {
+    console.log('SW registration failed with error: ' + error);
+    })
+  });
+};

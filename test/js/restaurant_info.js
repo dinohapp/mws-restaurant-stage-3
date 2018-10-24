@@ -4,57 +4,43 @@ var restaurant = void 0,
     review = void 0,
     map = void 0;
 
-if (navigator.serviceWorker) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('../sw.js').catch(function (error) {
-      console.log('SW registration failed with error: ' + error);
-    });
-  });
-};
-
 /**
  * Initialize Google map, called from HTML.
  */
 window.initMap = function () {
-  fetchRestaurantFromURL(function (error, restaurant) {
-    if (error) {
-      // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
+  fetchRestaurantFromURL().then(function (restaurant) {
+    self.map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 16,
+      center: restaurant.latlng,
+      scrollwheel: false
+    });
+    fillBreadcrumb();
+    DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+  }).catch(function (error) {
+    return console.log('map error' + error);
   });
 };
 
 /**
  * Get current restaurant from page URL.
  */
-var fetchRestaurantFromURL = function fetchRestaurantFromURL(callback) {
+var fetchRestaurantFromURL = function fetchRestaurantFromURL() {
   if (self.restaurant) {
     // restaurant already fetched!
-    callback(null, self.restaurant);
-    return;
+    return Promise.resolve(self.restaurant);
   }
   var id = getParameterByName('id');
   if (!id) {
     // no id found in URL
-    error = 'No restaurant id in URL';
-    callback(error, null);
+    return Promise.reject('No restaurant id in URL');
   } else {
-    DBHelper.fetchRestaurantById(id, function (error, restaurant) {
-      self.restaurant = restaurant;
-      if (!restaurant) {
-        console.error(error);
-        return;
+    return DBHelper.fetchRestaurantById(id).then(function (restaurant) {
+      if (restaurant) {
+        self.restaurant = restaurant;
+        fillRestaurantHTML();
+        return Promise.resolve(restaurant);
       }
-      fillRestaurantHTML();
-      callback(null, restaurant);
+      return Promise.reject('error getting restaurant with that id');
     });
   }
 };
@@ -309,4 +295,16 @@ var addReview = function addReview() {
 
   document.getElementById('addReviewForm').reset();
   addReviewToggle();
+};
+
+/**
+ * Register service worker
+ */
+
+if (navigator.serviceWorker) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('../sw.js').catch(function (error) {
+      console.log('SW registration failed with error: ' + error);
+    });
+  });
 };

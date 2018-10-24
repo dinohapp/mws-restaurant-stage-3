@@ -1,25 +1,12 @@
 'use strict';
 
 var restaurants = void 0,
-    reviews = void 0,
     neighborhoods = void 0,
     cuisines = void 0;
 var map;
 var markers = [];
 
 //var DBHelper = import(dbhelper);
-
-/**
- * Register service worker
- */
-
-if (navigator.serviceWorker) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('../sw.js').catch(function (error) {
-      console.log('SW registration failed with error: ' + error);
-    });
-  });
-};
 
 //class DBHelper = () => {};
 /**
@@ -28,7 +15,7 @@ if (navigator.serviceWorker) {
 document.addEventListener('DOMContentLoaded', function (event) {
   fetchNeighborhoods();
   fetchCuisines();
-  DBHelper.fetchRestaurants();
+  // DBHelper.fetchRestaurants();
   DBHelper.fetchReviews();
 });
 
@@ -36,14 +23,11 @@ document.addEventListener('DOMContentLoaded', function (event) {
  * Fetch all neighborhoods and set their HTML.
  */
 var fetchNeighborhoods = function fetchNeighborhoods() {
-  DBHelper.fetchNeighborhoods(function (error, neighborhoods) {
-    if (error) {
-      // Got an error
-      console.error(error);
-    } else {
-      self.neighborhoods = neighborhoods;
-      fillNeighborhoodsHTML();
-    }
+  DBHelper.fetchNeighborhoods().then(function (neighborhoods) {
+    self.neighborhoods = neighborhoods;
+    fillNeighborhoodsHTML();
+  }).catch(function (error) {
+    return console.log(error);
   });
 };
 
@@ -66,14 +50,11 @@ var fillNeighborhoodsHTML = function fillNeighborhoodsHTML() {
  * Fetch all cuisines and set their HTML.
  */
 var fetchCuisines = function fetchCuisines() {
-  DBHelper.fetchCuisines(function (error, cuisines) {
-    if (error) {
-      // Got an error!
-      console.error(error);
-    } else {
-      self.cuisines = cuisines;
-      fillCuisinesHTML();
-    }
+  DBHelper.fetchCuisines().then(function (cuisines) {
+    self.cuisines = cuisines;
+    fillCuisinesHTML();
+  }).catch(function (error) {
+    return console.log('cuisines error' + error);
   });
 };
 
@@ -122,14 +103,9 @@ var updateRestaurants = function updateRestaurants() {
   var cuisine = cSelect[cIndex].value;
   var neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, function (error, restaurants) {
-    if (error) {
-      // Got an error!
-      console.error(error);
-    } else {
-      resetRestaurants(restaurants);
-      fillRestaurantsHTML();
-    }
+  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood).then(function (restaurants) {
+    resetRestaurants(restaurants);
+    fillRestaurantsHTML();
   });
 };
 
@@ -231,5 +207,17 @@ var addMarkersToMap = function addMarkersToMap() {
       window.location.href = marker.url;
     });
     self.markers.push(marker);
+  });
+};
+
+/**
+ * Register service worker
+ */
+
+if (navigator.serviceWorker) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('../sw.js').catch(function (error) {
+      console.log('SW registration failed with error: ' + error);
+    });
   });
 };
