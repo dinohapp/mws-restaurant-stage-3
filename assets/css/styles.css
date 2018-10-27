@@ -181,20 +181,49 @@ nav h1 a {
 
 /* ====================== Restaurant Listing ====================== */
 
-#reviewToggle {
-  display: none;
-}
-
 .favButton {
    background-color: white;
    font-size: 50px;
     color: red;
+    border: none;
+    padding: 0;
+    background: none;
+}
+
+.favButton:hover, .favButton:focus {
+  color: #3397db;
+  text-decoration: underline;
 }
 
 .isFavTrue {
   font-size: 50px;
   color: red;
+  border: none;
+  padding: 0;
+  background: none;
 }
+
+#reviewToggle {
+  display: none;
+}
+
+.addReviewButon {
+    margin: 5px;
+    padding: 10px;
+    background-color: #e7e7e7;
+    color: black;
+    border: 2px solid #f58500;
+    border-radius: 3px;
+    transition-duration: 0.4s;
+}
+
+.addReviewButon:hover, .addReviewButon:focus {
+    background-color: #e7e7e7; /* Green */
+    color: black;
+    border: 2px solid #1f76b1;
+
+}
+
 #restaurants-list {
   background-color: #f3f3f3;
   list-style: outside none none;

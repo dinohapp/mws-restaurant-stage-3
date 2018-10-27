@@ -15,7 +15,7 @@ var markers = [];
 document.addEventListener('DOMContentLoaded', function (event) {
   fetchNeighborhoods();
   fetchCuisines();
-  // DBHelper.fetchRestaurants();
+  DBHelper.fetchRestaurants();
   DBHelper.fetchReviews();
 });
 
@@ -94,6 +94,8 @@ window.initMap = function () {
  * Update page and map for current restaurants.
  */
 var updateRestaurants = function updateRestaurants() {
+  var restaurants = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.restaurants;
+
   var cSelect = document.getElementById('cuisines-select');
   var nSelect = document.getElementById('neighborhoods-select');
 

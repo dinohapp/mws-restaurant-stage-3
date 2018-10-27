@@ -79,49 +79,6 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   var name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
-  //is_favorite
-  var fav = document.createElement('button');
-  fav.className = 'favButton';
-  name.append(fav);
-  if (restaurant.is_favorite == 'true') {
-    fav.innerHTML = '★';
-  } else {
-    fav.innerHTML = '☆';
-  }
-  fav.setAttribute('aria-label', 'add restaurant as favorite');
-  fav.onclick = function () {
-    if (restaurant.is_favorite == 'false') {
-      restaurant.is_favorite = 'true';
-      //fav.classList.toggle("isFavTrue");
-      fav.innerHTML = '★';
-    } else {
-      restaurant.is_favorite = 'false';
-      fav.innerHTML = '☆';
-      //      fav.classList.toggle("isFavFalse");
-    }
-    DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite);
-  };
-
-  /*    const fav = document.createElement('button');
-    fav.className = 'favButton';
-    fav.innerHTML = '☆';//&#2605-06
-    name.append(fav);
-    fav.setAttribute('aria-label', 'add restaurant as favorite');
-    fav.onclick = function(){
-      if(restaurant.is_favorite == false) {
-        restaurant.is_favorite = true;
-        fav.innerHTML = '★';
-        fav.classList.toggle("isFavTrue");
-      }
-      else {
-        restaurant.is_favorite = false;
-        fav.innerHTML = '☆';
-  //      fav.classList.toggle("isFavFalse");
-        }
-              //const favToggle = restaurant.is_favorite = true;
-        //DBHelper.toggleFavorite(restaurant.id, favToggle);
-      }*/
-
   var address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
@@ -133,12 +90,35 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   var cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
 
+  //is_favorite
+  var fav = document.createElement('button');
+  fav.className = 'favButton';
+  if (restaurant.is_favorite == 'true') {
+    fav.innerHTML = '  \u2605';
+  } else {
+    fav.innerHTML = '  \u2606';
+  }
+  fav.setAttribute('aria-label', 'add restaurant as favorite');
+  fav.onclick = function () {
+    if (restaurant.is_favorite == 'false') {
+      restaurant.is_favorite = 'true';
+      //fav.classList.toggle("isFavTrue");
+      fav.innerHTML = '  \u2605';
+    } else {
+      restaurant.is_favorite = 'false';
+      fav.innerHTML = '  \u2606';
+      //      fav.classList.toggle("isFavFalse");
+    }
+    DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite);
+  };
+  name.append(fav);
+
   // fill operating hours
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  DBHelper.fetchReviews().then(function (reviews) {
+  DBHelper.fetchReviews(restaurant.id).then(function (reviews) {
     self.reviews = reviews;
     fillReviewsHTML(reviews);
   });
@@ -274,12 +254,12 @@ var addReview = function addReview() {
   var comments = document.getElementById('comment').value;
   var id = '';
   var reviewObject = {
-    id: id,
     restaurant_id: restaurant_id,
     name: name,
-    createdAt: new Date(),
+    rating: rating,
     comments: comments,
-    rating: rating
+    id: id,
+    createdAt: new Date()
   };
   window.addEventListener("online", function () {
     DBHelper.pushReviewsWhenOnline();

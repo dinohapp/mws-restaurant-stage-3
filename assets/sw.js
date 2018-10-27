@@ -33,12 +33,14 @@ self.addEventListener('install', function(event) {
 		)//.catch(error => {console.log("Error opening sw caches: " + error)}
 });
 
-
+//@TODO add fetch responses only for GET requests
 self.addEventListener('fetch', event => {
 	event.respondWith(
     caches.match(event.request).then(response => {
-      	return response ||
-      fetch(event.request)
+/*      	return response ||
+      fetch(event.request)*/
+      if (response) return response;
+      return fetch(event.request)
       .then(resp => {
       	if(!resp || resp.status !== 200 || resp.type !== 'basic') {
       		return resp;

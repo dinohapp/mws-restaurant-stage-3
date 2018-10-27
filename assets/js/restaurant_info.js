@@ -75,48 +75,6 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
-
-//is_favorite
-  let fav = document.createElement('button');
-  fav.className = 'favButton';
-  name.append(fav);
-  if (restaurant.is_favorite == 'true') {fav.innerHTML = '★'}
-    else {fav.innerHTML = '☆';}
-  fav.setAttribute('aria-label', 'add restaurant as favorite');
-  fav.onclick = function(){
-    if(restaurant.is_favorite == 'false') {
-      restaurant.is_favorite = 'true';
-      //fav.classList.toggle("isFavTrue");
-      fav.innerHTML = '★';
-    }
-    else {
-      restaurant.is_favorite = 'false';
-      fav.innerHTML = '☆';
-//      fav.classList.toggle("isFavFalse");
-      }
-      DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite);
-    }
-
-/*    const fav = document.createElement('button');
-  fav.className = 'favButton';
-  fav.innerHTML = '☆';//&#2605-06
-  name.append(fav);
-  fav.setAttribute('aria-label', 'add restaurant as favorite');
-  fav.onclick = function(){
-    if(restaurant.is_favorite == false) {
-      restaurant.is_favorite = true;
-      fav.innerHTML = '★';
-      fav.classList.toggle("isFavTrue");
-    }
-    else {
-      restaurant.is_favorite = false;
-      fav.innerHTML = '☆';
-//      fav.classList.toggle("isFavFalse");
-      }
-            //const favToggle = restaurant.is_favorite = true;
-      //DBHelper.toggleFavorite(restaurant.id, favToggle);
-    }*/
-
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
@@ -129,12 +87,33 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
 
+  //is_favorite
+  let fav = document.createElement('button');
+  fav.className = 'favButton';
+  if (restaurant.is_favorite == 'true') {fav.innerHTML = '  \u2605'} //\u2605 = dark star
+    else {fav.innerHTML = '  \u2606';}
+  fav.setAttribute('aria-label', 'add restaurant as favorite');
+  fav.onclick = function(){
+    if(restaurant.is_favorite == 'false') {
+      restaurant.is_favorite = 'true';
+      //fav.classList.toggle("isFavTrue");
+      fav.innerHTML = '  \u2605';
+    }
+    else {
+      restaurant.is_favorite = 'false';
+      fav.innerHTML = '  \u2606';
+//      fav.classList.toggle("isFavFalse");
+      }
+      DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite);
+    }
+    name.append(fav);
+
   // fill operating hours
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  DBHelper.fetchReviews()
+  DBHelper.fetchReviews(restaurant.id)
   .then(reviews => {
     self.reviews = reviews;
     fillReviewsHTML(reviews)
@@ -270,12 +249,12 @@ const addReview = () => {
   let comments = document.getElementById('comment').value;
   let id = '';
   const reviewObject = {
-    id: id,
     restaurant_id: restaurant_id,
     name: name,
-    createdAt: new Date(),
+    rating: rating,
     comments: comments,
-    rating: rating
+    id: id,
+    createdAt: new Date()
   }
     window.addEventListener("online", () => {
       DBHelper.pushReviewsWhenOnline();

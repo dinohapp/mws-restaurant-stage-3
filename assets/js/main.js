@@ -13,7 +13,7 @@ var markers = [];
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
-  // DBHelper.fetchRestaurants();
+  DBHelper.fetchRestaurants();
   DBHelper.fetchReviews();
 });
 
@@ -87,7 +87,7 @@ window.initMap = () => {
 /**
  * Update page and map for current restaurants.
  */
-const updateRestaurants = () => {
+const updateRestaurants = (restaurants = self.restaurants) => {
   const cSelect = document.getElementById('cuisines-select');
   const nSelect = document.getElementById('neighborhoods-select');
 

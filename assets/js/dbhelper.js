@@ -1,7 +1,7 @@
 import {Store, set, get, keys} from 'idb-keyval';
 
-const restaurantsDB = new Store('restaurantsDB', 'restaurants');
-const reviewsDB = new Store('reviewsDB', 'reviews');
+let restaurantsDB = new Store('restaurantsDB', 'restaurants');
+let reviewsDB = new Store('reviewsDB', 'reviews');
 
 let reviewsToPush = [];
 let restaurants = [];
@@ -11,6 +11,7 @@ let restaurants = [];
  */
 
 class DBHelper {
+
   /**
    * Database URL.
    * Change this to restaurants.json file location on your server.
@@ -20,14 +21,10 @@ class DBHelper {
 /*
 fav
 http://localhost:1337/restaurants/?is_favorite=true
-
 reviews for certain restaurant
 http://localhost:1337/reviews/?restaurant_id=<restaurant_id>
-
 get all reviews
 http://localhost:1337/reviews/
-
-
 object format
 {
     "restaurant_id": <restaurant_id>,
@@ -51,29 +48,68 @@ object format
    * Fetch all restaurants.
    */
 
-  static fetchRestaurants() {
-    if(restaurants.length !== 0) {
-    keys(restaurantsDB).then(keys => {
+
+/*  static gll() {
+  let result = [];
+  keys('restaurantsDB').then(keys => {
+    console.log(keys)
     keys.forEach(key => {
       get(key, restaurantsDB)
+      console.log(key)
         .then(restaurantn => {
-          restaurants.push(restaurantn);
-          console.log(dbRestaurants);
-          return Promise.resolve(restaurants);
+          console.log(restaurantn)
+          result.push(restaurantn);
         })
+    })
+  })
+  return Promise.resolve(result);
+};*/
+
+  static fetchRestaurants() {
+  return keys(restaurantsDB).then(keyz => {
+    if(keyz.length == 0) {
+      return DBHelper.fetchRest()
+      .then(rest =>
+        Promise.resolve(rest)
+        )
+      }
+      return get('restaurants', restaurantsDB).then(dbrest => {
+        return Promise.resolve(dbrest)
       })
     })
-    } else {
+  }
+
+ static fetchRest() {
       return fetch(DBHelper.DATABASE_URL)
       .then(response => response.json())
           .then(restaurants => {
+            set('restaurants', restaurants, restaurantsDB)
+/*            restaurants.forEach(restaurant => {
+            set(restaurant.id, restaurant, restaurantsDB);
+        })*/
+        return Promise.resolve(restaurants);
+      })
+  }
+
+/*
+  static fetchRestaurants() {
+    return(get('restaurants', restaurantsDB))
+    .then(restaurants => {
+      if (restaurants) {
+          return Promise.resolve(restaurants);
+      }
+      return fetch(DBHelper.DATABASE_URL)
+      .then(response => response.json())
+          .then(restaurants => {
+            set('restaurants', restaurants, restaurantsDB);
             restaurants.forEach(restaurant => {
             set(restaurant.id, restaurant, restaurantsDB);
         })
           return Promise.resolve(restaurants);
       })
-    }
-  }
+    })
+  }*/
+
 /*  static fetchRestaurants(callback, id) {
     return(get('id', restaurantsDB))
     .then(dbRestaurants => {
@@ -101,7 +137,6 @@ object format
           return (callback(null, restaurants), restaurants);
       })
 }
-
   static fetchRestaurants(callback, id) {
     keys(restaurantsDB).then(keys => {
     keys.forEach(key => {
@@ -150,17 +185,18 @@ object format
 
 
   static fetchReviews() {
-    return(get('rest_id', reviewsDB))
-    .then(dbReviews => {
-       if (dbReviews) {
-          return Promise.resolve(dbReviews);
+    return(get('reviews', reviewsDB))
+    .then(reviews => {
+       if (reviews) {
+          return Promise.resolve(reviews);
        }
        return fetch(DBHelper.DATABASE_REVIEWS_URL)
       .then(response => response.json())
           .then(reviews => {
-             reviews.forEach(review => {
+            set('reviews', reviews, reviewsDB);
+/*             reviews.forEach(review => {
              set(review.id, review, reviewsDB);
-        })
+        })*/
         return Promise.resolve(reviews);
       })
      })
@@ -193,8 +229,6 @@ object format
        return DBHelper.idbReviewsHandler();
       });
     }
-
-
  static idbReviewsHandler(id) {
   const reviewsDB = new Store('restaurantsDB', 'restaurants');
   return fetch(DBHelper.DATABASE_REVIEWS_URL + '/?restaurant_id=' + 1)
@@ -282,10 +316,26 @@ object format
     })
   };*/
 
-  /**
+/*  /**
    * Toggle Favorite status.
    */
+
   static toggleFavorite(id, favToggle) {
+    fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${favToggle}`, {
+      method: 'PUT'
+    })
+    .then(() => {
+      return get('restaurants', restaurantsDB)
+      .then(restaurants => {
+        const nRestaurants = restaurants.map(rest => rest.id === id ? ({...rest, is_favorite: favToggle})
+          : rest);
+//        console.log(newRestaurants)
+        set('restaurants', nRestaurants, restaurantsDB);
+      })
+    })
+  }
+
+/*  static toggleFavorite(id, favToggle) {
     fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${favToggle}`, {
       method: 'PUT'
     })
@@ -296,22 +346,16 @@ object format
         set(id, restaurant, restaurantsDB);
       })
     })
-   }
+   }*/
 
   /**
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id) {
-/*        return(get(id, restaurantsDB))
-    .then(dbRestaurant => {
-      if (dbRestaurant) {
-          return dbRestaurant;
-        } else {*/
       return DBHelper.fetchRestaurants()
       .then(restaurants => {
           const rid = restaurants.find(r => r.id == id);
       return Promise.resolve(rid);
-      //}
     })
   }
 
@@ -424,7 +468,7 @@ object format
     return marker;
   }
 
-static gl() {
+/*static gl() {
   return new Promise((resolve, reject) => {
   //func(resolve, reject) => {
   let result = [];
@@ -436,12 +480,9 @@ static gl() {
         })
     })
   })
-  //return result;
   resolve(result);
-  //}
   })
-  //resolve(result);
-};
+};*/
 
 /*static gl() {
   let result = [];
@@ -469,7 +510,7 @@ console.log(offlineReviews);
 static processNewReview(newReview) {
   let review = JSON.parse(newReview);
   return keys(reviewsDB).then(dbKeysArray => {
-    review.id = dbKeysArray.length+reviewsToPush.length+1;
+    review.id = dbKeysArray.length+reviewsToPush.length;
       if(navigator.onLine == false && localStorage.length != 0) {
         localStorage.setItem(review.id, JSON.stringify(review));
         reviewsToPush.push(review);
@@ -482,7 +523,7 @@ static processNewReview(newReview) {
 }
 
 static pushReviewsToDB(review) {
-    console.log('pushing revew # to db', review.id);
+    console.log(`pushing revew ${review.id} to db`);
     set(review.id, review, reviewsDB);
 }
 
@@ -501,7 +542,6 @@ fetch(DBHelper.DATABASE_REVIEWS_URL, {
   DBHelper.pushReviewsToDB(review);
   })
 }
-
 static pushReviewsToDB(review) {
     console.log('pushing revew # to db', review.id);
     set(review.id, review, reviewsDB);
@@ -523,7 +563,6 @@ static pushReviewsToDB(review) {
   reviewsToPush.push(review);
   DBHelper.pushReviewsToDB(reviewsToPush);
 }
-
 static pushReviewsToDB(reviewsArray) {
     reviewsArray.forEach(review => {
     //console.log(review);
@@ -539,10 +578,8 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     matchCaches(event.request),
     idbRestaurantHandler(event.request)
-
     );
    });
-
 const matchCaches = event => {
 caches.match(event.request).then(function(response) {
       if (response) return response;
@@ -558,9 +595,7 @@ caches.match(event.request).then(function(response) {
         })
       })
 };
-
 const idbRestaurantHandler = request => {
-
   fetch(event.request).catch(result => {
     return get('restaurants', restaurantsDB)
     .then(restaurants => {
