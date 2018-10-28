@@ -95,9 +95,10 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   fav.className = 'favButton';
   if (restaurant.is_favorite == 'true') {
     fav.innerHTML = '  \u2605';
-  } else {
-    fav.innerHTML = '  \u2606';
-  }
+  } //\u2605 = dark star
+  else {
+      fav.innerHTML = '  \u2606';
+    }
   fav.setAttribute('aria-label', 'add restaurant as favorite');
   fav.onclick = function () {
     if (restaurant.is_favorite == 'false') {
@@ -119,7 +120,7 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   }
   // fill reviews
   DBHelper.fetchReviews(restaurant.id).then(function (reviews) {
-    self.reviews = reviews;
+    self.reviews = reviews.reverse();
     fillReviewsHTML(reviews);
   });
 };

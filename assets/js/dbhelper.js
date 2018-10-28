@@ -1,4 +1,4 @@
-import {Store, set, get, keys} from 'idb-keyval';
+import {Store, set, get, keys, del} from 'idb-keyval';
 
 let restaurantsDB = new Store('restaurantsDB', 'restaurants');
 let reviewsDB = new Store('reviewsDB', 'reviews');
@@ -65,11 +65,17 @@ object format
   return Promise.resolve(result);
 };*/
 
+  static storedRestaurants(restaurants) {
+    let storedRestaurants = restaurants;
+    return Promise.resolve(storedRestaurants);
+  }
+
   static fetchRestaurants() {
   return keys(restaurantsDB).then(keyz => {
     if(keyz.length == 0) {
       return DBHelper.fetchRest()
       .then(rest =>
+        DBHelper.storedRestaurants(rest)
         Promise.resolve(rest)
         )
       }
@@ -181,10 +187,97 @@ object format
       })
 };*/
 
+/*
+  static fetchReviews(id) {
+  return keys(reviewsDB).then(keyz => {
+    if(keyz.length !== 0) {
+      return get('reviews', reviewsDB).then(dbrev => {
+        if(dbrev.filter(dbrev.restaurant_id === id) !== undefined) {
+          return Promise.resolve(dbrev)
+        }
+      return DBHelper.fetchRev(id)
+      .then(rev =>
+        Promise.resolve(rev)
+        )
+      })
+      return get('reviews', reviewsDB).then(dbrev => {
+        return Promise.resolve(dbrev)
+      })
+    }
+  })
+}
+
+ static fetchRev(id) {
+      return fetch(`${DBHelper.DATABASE_REVIEWS_URL}/?restaurant_id=${id}`)
+      .then(response => response.json())
+          .then(reviews => {
+            set('reviews', reviews, reviewsDB)
+        return Promise.resolve(reviews);
+      })
+  }*/
 
 
+  static fetchReviews(id) {
+  return keys(reviewsDB).then(keyz => {
+    if(keyz.length == 0) {
+      return DBHelper.fetchRev(id)
+      .then(rev =>
+        Promise.resolve(rev)
+        )
+    }
+      return DBHelper.getDBRev(id)
+        .then(rev =>
+        Promise.resolve(rev)
+        )
+      })
+  }
 
-  static fetchReviews() {
+ static getDBRev(id) {
+      return get('reviews', reviewsDB).then(dbrev => {
+        if(dbrev.filter(dbr => (dbr.restaurant_id === id)).length !==0) {
+            return Promise.resolve(dbrev)
+          }
+      return DBHelper.fetchRev(id)
+      .then(rev =>
+        Promise.resolve(rev)
+        )
+      })
+ }
+
+ static fetchRev(id) {
+      return fetch(`${DBHelper.DATABASE_REVIEWS_URL}/?restaurant_id=${id}`)
+      .then(response => response.json())
+          .then(reviews => {
+            set('reviews', reviews, reviewsDB)
+            set('offlineReviews', [], reviewsDB)
+        return Promise.resolve(reviews);
+      })
+  }
+
+/*  static fetchReviews(id) {
+  return keys(reviewsDB).then(keyz => {
+    if(keyz.length == 0) {
+      return DBHelper.fetchRev(id)
+      .then(rev =>
+        Promise.resolve(rev)
+        )
+      }
+      return get('reviews', reviewsDB).then(dbrev => {
+        return Promise.resolve(dbrev)
+      })
+    })
+  }
+
+ static fetchRev(id) {
+      return fetch(`${DBHelper.DATABASE_REVIEWS_URL}/?restaurant_id=${id}`)
+      .then(response => response.json())
+          .then(reviews => {
+            set('reviews', reviews, reviewsDB)
+        return Promise.resolve(reviews);
+      })
+  }*/
+
+  /*static fetchReviews() {
     return(get('reviews', reviewsDB))
     .then(reviews => {
        if (reviews) {
@@ -194,14 +287,14 @@ object format
       .then(response => response.json())
           .then(reviews => {
             set('reviews', reviews, reviewsDB);
-/*             reviews.forEach(review => {
+             reviews.forEach(review => {
              set(review.id, review, reviewsDB);
-        })*/
+        })
         return Promise.resolve(reviews);
       })
      })
     }
-
+*/
 /*  static fetchReviews(callback, rest_id) {
     return(get('rest_id', reviewsDB))
     .then(dbReviews => {
@@ -498,24 +591,38 @@ object format
 };*/
 
 static pushReviewsWhenOnline() {
-
-//IF PUSH successful localStorage.clear();
-const offlineReviews = {...localStorage};
-console.log(offlineReviews);
-/*    offlineReviews.forEach(review => {
-      DBHelper.pushReviewsToServer(JSON.parse(review));
-    })*/
+  return get('offlineReviews', reviewsDB)
+      .then(offReviews => {
+        offReviews.forEach(review => {
+        DBHelper.pushReviewsToDB(review)
+        DBHelper.pushReviewsToServer(review)
+        })
+      })
+  set('offlineReviews', [], reviewsDB);
 }
+
+
+static storeOfflineReviews(review) {
+  return get('offlineReviews', reviewsDB)
+      .then(offReviews => {
+        offReviews.push(review);
+        console.log('reviews stored offline: ' + offReviews)
+        return set('offlineReviews', offReviews, reviewsDB);
+    })
+  }
 
 static processNewReview(newReview) {
   let review = JSON.parse(newReview);
+  let offlineReviewLength;
+  get('offlineReviews', reviewsDB).then(offlineRev => {return offlineReviewLength = offlineRev.length});
+  console.log(offlineReviewLength)
   return keys(reviewsDB).then(dbKeysArray => {
-    review.id = dbKeysArray.length+reviewsToPush.length;
-      if(navigator.onLine == false && localStorage.length != 0) {
-        localStorage.setItem(review.id, JSON.stringify(review));
-        reviewsToPush.push(review);
-        DBHelper.pushReviewsToDB(review);
+    review.id = dbKeysArray.length+offlineReviewLength+1;
+      if(navigator.onLine == false && offlineReviewLength !== 0) {
+        console.log('pushing reviews offline, array:')
+        DBHelper.storeOfflineReviews(review);
       }else {
+        console.log('pushing review to db and to server')
         DBHelper.pushReviewsToDB(review);
         DBHelper.pushReviewsToServer(review);
       }
@@ -524,7 +631,14 @@ static processNewReview(newReview) {
 
 static pushReviewsToDB(review) {
     console.log(`pushing revew ${review.id} to db`);
-    set(review.id, review, reviewsDB);
+    //set(review.id, review, reviewsDB);
+      return get('reviews', reviewsDB)
+      .then(reviews => {
+        reviews.push(review);
+/*        const nReviews = reviews.map(rev => rev.id === id ? ({...rev, is_favorite: favToggle})
+          : rev);*/
+        return set('reviews', reviews, reviewsDB);
+      })
 }
 
 static pushReviewsToServer(review) {

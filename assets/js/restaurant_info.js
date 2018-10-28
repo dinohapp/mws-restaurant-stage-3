@@ -115,7 +115,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   // fill reviews
   DBHelper.fetchReviews(restaurant.id)
   .then(reviews => {
-    self.reviews = reviews;
+    self.reviews = reviews.reverse();
     fillReviewsHTML(reviews)
   })
 }
