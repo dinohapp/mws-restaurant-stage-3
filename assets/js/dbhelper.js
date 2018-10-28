@@ -65,17 +65,16 @@ object format
   return Promise.resolve(result);
 };*/
 
-  static storedRestaurants(restaurants) {
+/*  static storedRestaurants(restaurants) {
     let storedRestaurants = restaurants;
     return Promise.resolve(storedRestaurants);
-  }
+  }*/
 
   static fetchRestaurants() {
   return keys(restaurantsDB).then(keyz => {
     if(keyz.length == 0) {
       return DBHelper.fetchRest()
       .then(rest =>
-        DBHelper.storedRestaurants(rest)
         Promise.resolve(rest)
         )
       }
@@ -537,7 +536,7 @@ object format
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}.jpg`);
+    return (`/img/${restaurant.photograph}.webp`);
   }
 
   /**
@@ -599,6 +598,7 @@ static pushReviewsWhenOnline() {
         })
       })
   set('offlineReviews', [], reviewsDB);
+  console.log('offline review posted')
 }
 
 
@@ -613,7 +613,7 @@ static storeOfflineReviews(review) {
 
 static processNewReview(newReview) {
   let review = JSON.parse(newReview);
-  let offlineReviewLength;
+  let offlineReviewLength = 0;
   get('offlineReviews', reviewsDB).then(offlineRev => {return offlineReviewLength = offlineRev.length});
   console.log(offlineReviewLength)
   return keys(reviewsDB).then(dbKeysArray => {

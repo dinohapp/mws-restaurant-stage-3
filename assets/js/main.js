@@ -66,12 +66,13 @@ const fillCuisinesHTML = (cuisines = self.cuisines) => {
     option.value = cuisine;
     select.append(option);
   });
+    updateRestaurants();
 }
 
 /**
  * Initialize Google map, called from HTML.
  */
-window.initMap = () => {
+/*window.initMap = () => {
   let loc = {
     lat: 40.722216,
     lng: -73.987501
@@ -80,10 +81,11 @@ window.initMap = () => {
     zoom: 12,
     center: loc,
     scrollwheel: false
+
   });
   updateRestaurants();
 }
-
+*/
 /**
  * Update page and map for current restaurants.
  */
@@ -181,6 +183,22 @@ const createRestaurantHTML = (restaurant) => {
   li.append(more)
 
   return li
+}
+
+/**
+ * Initialize Google map, called from HTML.
+ */
+window.initMap = () => {
+  let loc = {
+    lat: 40.722216,
+    lng: -73.987501
+  };
+  self.map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: loc,
+    scrollwheel: false
+  });
+
 }
 
 /**

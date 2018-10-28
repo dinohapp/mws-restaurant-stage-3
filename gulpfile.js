@@ -11,7 +11,8 @@ var gulp = require('gulp'),
 	streamify = require('gulp-streamify'),
 	csso = require('gulp-csso'),
 	htmlmin = require('gulp-htmlmin'),
-	browserify = require('browserify');
+	browserify = require('browserify'),
+	webp = require('gulp-webp');
 
 gulp.task('default', ['clean', 'css', 'html', 'js', 'db', 'images', 'sw', 'manifest', 'favicon']), function() {
 
@@ -68,12 +69,13 @@ gulp.task('sw', function() {
     			]
   				]
 			}))
-		//.pipe(streamify(uglify()))
+		.pipe(streamify(uglify()))
 		.pipe(gulp.dest('./test/'));
 });
 
 gulp.task('images', function() {
 	gulp.src('./assets/img/**/*.*')
+		.pipe(webp())
 		.pipe(gulp.dest('./test/img'));
 });
 
@@ -94,7 +96,7 @@ gulp.task('js', function() {
     			]
   				]
 			}))
-		//.pipe(streamify(uglify()))
+		.pipe(streamify(uglify()))
 		.pipe(gulp.dest('./test/js'));
 	 };
 	 jss(files[0]);
@@ -160,7 +162,7 @@ gulp.task('js', function() {
 gulp.task('db', function() {
 		gulp.src([`./assets/js/dbhelper.js`])
 		.pipe(webpack({
-			mode: 'development',
+			mode: 'production',
 			output: {filename: 'dbhelper.js'}
 		}))
 		.pipe(gulp.dest('./test/js'));

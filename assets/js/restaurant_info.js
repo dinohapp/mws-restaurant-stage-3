@@ -171,6 +171,11 @@ const fillReviewsHTML = (reviews) => {
  */
 const createReviewHTML = (review) => {
   const li = document.createElement('li');
+  if(navigator.onLine == false){
+    const offline = document.createElement('p');
+    offline.innerHTML = "The review will be posted once online";
+    li.appendChild(offline);
+  }
   const name = document.createElement('p');
   name.innerHTML = review.name;
   li.appendChild(name);
@@ -258,9 +263,7 @@ const addReview = () => {
   }
     window.addEventListener("online", () => {
       DBHelper.pushReviewsWhenOnline();
-    //TODO remove notificaiton about offline comment once its been pushed
     })
-    //TODO add a comment that review will be pushed when online
     DBHelper.processNewReview(JSON.stringify(reviewObject));
 
   const reviewsContainer = document.getElementById('reviews-container');
