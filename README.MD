@@ -1,4 +1,4 @@
-##Udacity MWS Project 3
+Udacity MWS Project 3
 Project is a PWA built to display restaurants in NY.
 
 Project is built on npm, to install type 'npm i'
